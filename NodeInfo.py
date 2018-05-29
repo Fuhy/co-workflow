@@ -1,14 +1,24 @@
 class NodeInfo(object):
-    """docstring for NodeInfo"""
+    """docstring for NodeInfo
 
-    def __init__(self, owner_ID, task_ID):
+    Attributes:
+        task_ID: A string for identifing tasks.
+        task_name:  A string.
+        owner_ID: A string for identifing owner. 
+        group: A set which contains user's ID
+        version: An integer count of times we have Modified the Infomation.
+        status: Bool value.
+    """
+
+    def __init__(self, owner_ID, task_ID, task_name):
         self.task_ID = task_ID
         self.owner_ID = owner_ID
+        self.task_name = 'new_task'
         self.group = set()
         self.version = 0
         self.status = False
 
-    # Get something
+
     def get_task_ID(self):
         return self.task_ID
 
@@ -24,7 +34,7 @@ class NodeInfo(object):
     def get_group(self):
         return self.group()
 
-    # Modify
+
     def update_version(self):
         self.version += 1
 
@@ -35,9 +45,9 @@ class NodeInfo(object):
     # check_user_exist()
     # User should be identified with ID
     # or there will be lots of modifying when rename a user.
-    def alter_owner(self, owner_ID):
-        # owner_name should be a validated account
-        self.owner_ID = owner_ID
+
+    def alter_owner(self, new_owner_ID):
+        self.owner_ID = new_owner_ID
 
     def add_group_member(self, member_list):
         for member in member_list:
@@ -47,5 +57,8 @@ class NodeInfo(object):
         for member in member_list:
             self.group.remove(member)
 
-    def rename_task():
-        pass
+    def alter_status(self, new_status):
+        self.status = new_status
+
+    def rename_task(self, new_task_name):
+        self.task_name = new_task_name

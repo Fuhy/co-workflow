@@ -1,5 +1,5 @@
 from copy import copy, deepcopy
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
 
 class DAG(object):
@@ -11,65 +11,165 @@ class DAG(object):
     def reset_graph(self):
         self.graph = OrderedDict()
 
-    # Tools
+
+
+
     def size(self):
         return len(self.graph)
 
-    def validate(self):
+    def ind_nodes(self, graph=None):
+        """ Returns a list of all nodes in the graph with no dependencies. """
+        if graph is None:
+            graph = self.graph
+
+        dependent_nodes = set(
+            node for dependents in graph.values() for node in dependents)
+        return [node for node in graph.keys() if node not in dependent_nodes]
+
+    def validate(self, graph=None):
         """ Returns (Boolean, message) of whether DAG is valid. """
-        pass
+        graph = graph if graph is not None else self.graph
+        if len(self.ind_nodes(graph)) == 0:
+            return (False, 'no independent nodes detected')
+        try:
+            self.topological_sort(graph)
+        except ValueError:
+            return (False, 'failed topological sort')
+        return (True, 'valid')
 
     def topological_sort(self, graph=None):
         """ Returns a topological ordering of the DAG.
-
         Raises an error if this is not possible (graph is not valid).
         """
-        pass
+        if graph is None:
+            graph = self.graph
 
-    # Edit Node
-    def add_node(self):
-        pass
+        in_degree = {}
+        for u in graph:
+            in_degree[u] = 0
 
-    def delete_node(self):
-        pass
+        for u in graph:
+            for v in graph[u]:
+                in_degree[v] += 1
 
-    def rename_task(self, old_task_name, new_task_name):
-        """ Not just change the nodes but also the edges """
-        pass
+        queue = deque()
+        for u in in_degree:
+            if in_degree[u] == 0:
+                queue.appendleft(u)
 
-    # Edit Edge
-    def add_edge(self):
-        pass
+        l = []
+        while queue:
+            u = queue.pop()
+            l.append(u)
+            for v in graph[u]:
+                in_degree[v] -= 1
+                if in_degree[v] == 0:
+                    queue.appendleft(v)
 
-    def delete_edge(self):
-        pass
-
-    # Show Something
-    def get_one_predecessor(self, node):
-        pass
-
-    def show_predecessors(self, node):
-        """ Returns a list of *all* predecessors of the given node """
-        pass
-
-    def show_downstream(self, node):
-        """ Returns a list of all nodes this node has edges direct towards. """
-        pass
-
-    def show_all_downstream(self, node):
-        pass
+        if len(l) == len(graph):
+            return l
+        else:
+            raise ValueError('graph is not acyclic')
 
 
-class Node(object):
-    """docstring for Node"""
 
-    def __init__(self, task_name, last_task):
 
-        self.name = task_name
-        # self.ID = ID()
-        # self.info = Info()     class INFO
-        self._last_node = last_task
 
-        # some should be default to describe the relation
-        self.next_edge = set()
-        self.last_edge = set()
+
+    def add_node(self, taskID, graph=None):
+        if not graph:
+            graph = self.graph
+        if taskID in graph:
+            raise KeyError('node %s already exists' % taskID)
+        graph[taskID] = set()
+
+    def delete_node(self, taskID, graph=None):
+        if not graph:
+            graph = self.graph
+        if taskID not in graph:
+            raise KeyError('node %s does not exist' % taskID)
+        graph.pop(taskID)
+
+        for node, edges in graph.items():
+            if taskID in edges:
+                edges.remove(taskID)
+
+    def add_edge(self, ind_node, dep_node, graph=None):
+        if not graph:
+            graph = self.graph
+        if ind_node not in graph or dep_node not in graph:
+            raise KeyError('one or more nodes do not exist in graph')
+        test_graph = deepcopy(graph)
+        test_graph[ind_node].add(dep_node)
+        is_valid, message = self.validate(test_graph)
+        if is_valid:
+            graph[ind_node].add(dep_node)
+        else:
+            raise DAGValidationError()
+
+    def delete_edge(self, ind_node, dep_node, graph=None):
+        if not graph:
+            graph = self.graph
+        if dep_node not in graph.get(ind_node, []):
+            raise KeyError('this edge does not exist in graph')
+        graph[ind_node].remove(dep_node)
+
+
+
+
+
+
+
+    def show_predecessors(self, node, graph=None):
+        if graph is None:
+            graph = self.graph
+
+        return [key for key in graph if node in graph[key]]
+
+    def show_all_predecessors(self, node, graph=None):
+        if graph is None:
+            graph = self.graph
+        nodes = [node]
+        nodes_seen = set()
+        i = 0
+        while i < len(nodes):
+            predecessors = list(self.show_predecessors(nodes[i], graph))
+            for preNode in predecessors:
+                if preNode not in nodes_seen:
+                    nodes_seen.add(preNode)
+                    nodes.append(preNode)
+            i += 1
+        return list(
+            filter(
+                lambda node: node in nodes_seen,
+                self.topological_sort(graph=graph)))
+
+    def show_downstream(self, node, graph=None):
+        """ Returns a list of all nodes this node has edges towards. """
+        if graph is None:
+            graph = self.graph
+        if node not in graph:
+            raise KeyError('node %s is not in graph' % node)
+        return list(graph[node])
+
+    def show_all_downstream(self, node, graph=None):
+        if graph is None:
+            graph = self.graph
+        nodes = [node]
+        nodes_seen = set()
+        i = 0
+        while i < len(nodes):
+            downstreams = self.show_downstream(nodes[i], graph)
+            for downstream_node in downstreams:
+                if downstream_node not in nodes_seen:
+                    nodes_seen.add(downstream_node)
+                    nodes.append(downstream_node)
+            i += 1
+        return list(
+            filter(
+                lambda node: node in nodes_seen,
+                self.topological_sort(graph=graph)))
+
+
+
+        
