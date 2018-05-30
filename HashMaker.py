@@ -1,4 +1,6 @@
 import random
+import Database
+from PathOrName import *
 
 
 class Singleton(object):
@@ -14,10 +16,6 @@ class Singleton(object):
 class HashMaker(Singleton):
     """docstring for HashMaker"""
 
-    user_table = set()
-    task_table = set()
-    graph_table = set()
-
     def __init__(self):
         self._restore()
 
@@ -26,46 +24,59 @@ class HashMaker(Singleton):
     #   Because __new__() can make sure that only one instance exists
     #   and then it will call __init__() so it will lose its current status.
     def _restore(cls):
-        pass
+        cls.db = Database.DataManager(DATABASE)
 
     def hash_user(self):
-        value = (random.randint(0, 10000000) % 100000)
-        if value in self.user_table:
-            return hash_user()
+        value = (random.randint(0, 100000000) % 100000)
+        if self.check_user_exist(value):
+            return self.hash_user()
         else:
-            self.user_table.add(value)
             return value
 
     def hash_task(self):
-        value = (random.randint(0, 10000000) % 100000)
-        if value in self.task_table:
-            return hash_task()
+        value = (random.randint(0, 100000000) % 100000)
+        if self.check_task_exist(value):
+            return self.hash_task()
         else:
-            self.task_table.add(value)
             return value
 
     def hash_graph(self):
-        value = (random.randint(0, 10000000) % 100000)
-        if value in self.graph_table:
-            return hash_graph()
+        value = (random.randint(0, 100000000) % 100000)
+        if self.check_graph_exist(value):
+            return self.hash_graph()
         else:
-            self.graph_table.add(value)
             return value
 
     def check_user_exist(self, ID):
-        if ID in self.user_table:
-            return True
-        else:
+        predicate = " `user_ID` = " + '"' + str(ID) + '"'
+        result = self.db.select_from_where('*', 'User', predicate)
+        if result.rowcount == 0:
             return False
+        else:
+            return True
+
+    def check_user_name_exist(self, account):
+        predicate = " `user_name` = " + '"' + str(account) + '"'
+        result = self.db.select_from_where('*', 'User', predicate)
+        if result.rowcount == 0:
+            return False
+        else:
+            return True
 
     def check_task_exist(self, ID):
-        if ID in self.task_table:
-            return True
-        else:
+        predicate = " `task_ID` = " + '"' + str(ID) + '"'
+        result = self.db.select_from_where('*', 'NodeInfo', predicate)
+        if result.rowcount == 0:
             return False
+        else:
+            return True
 
     def check_graph_exist(self, ID):
-        if ID in self.graph_table:
-            return True
-        else:
+        predicate = " `graph_ID` = " + '"' + str(ID) + '"'
+        result = self.db.select_from_where('*', 'DAG', predicate)
+        if result.rowcount == 0:
             return False
+        else:
+            return True
+
+

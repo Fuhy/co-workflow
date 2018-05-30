@@ -1,5 +1,6 @@
 import pymysql
 
+
 class DataManager(object):
     """docstring for DataManager"""
 
@@ -26,16 +27,18 @@ class DataManager(object):
             otherwise return None.
         """
         if predicate == "":
-            command = 'SELECT ' + what + ' FROM ' + where + ';'
+            command = "SELECT {} FROM {} ;".format(what, where)
         else:
-            command = 'SELECT ' + what + ' FROM ' + where + ' WHERE ' + predicate + ';'
+            command = "SELECT {} FROM {} WHERE {};".format(
+                what, where, predicate)
+
         cursor = self.connect.cursor()
         try:
             cursor.execute(command)
         except Exception:
+            print(command)
             return None
         return cursor
-
 
     def insert_values(self, where, values, which=""):
         """Insert values into table's given column.
@@ -48,9 +51,11 @@ class DataManager(object):
             otherwise return FALSE.
         """
         if which == "":
-            command = 'INSERT INTO ' + where + ' VALUES ' + values + ' ;'
+            command = "INSERT INTO {} VALUES {} ;".format(where, values)
         else:
-            command = 'INSERT INTO ' + where + '(' + which + ') VALUES ' + values + ' ;'
+            command = "INSERT INTO {}({}) VALUES {} ;".format(
+                where, which, values)
+
         try:
             with self.connect.cursor() as cursor:
                 cursor.execute(command)
@@ -58,7 +63,6 @@ class DataManager(object):
             print(command)
             self.connect.rollback()
             return False
+
         self.connect.commit()
         return True
-
-
