@@ -8,26 +8,39 @@ from HashMaker import HashMaker
 class DAG(object):
     """docstring for DAG"""
 
-    def __init__(self, graph_ID,owner_ID):
+    def __init__(self, graph_ID, owner_ID="", graph_name="new_task"):
         self.graph = OrderedDict()
+        self.graph_name = graph_name
 
         if HashMaker().check_graph_exist(graph_ID):
-            self.restore_graph()
-            return True
+            self.restore_graph(graph_ID)
         else:
-            False
+            self.init_graph(graph_ID, graph_name, owner_ID)
 
-            
-
-    def restore_graph(self):
+    def init_graph(self, graph_ID, graph_name, owner_ID):
         db = DataManager(DATABASE)
-        cursor = db.select_from_where('begin_TID, end_TID','DAG_Node, DAG_Edge','begin_TID = task_ID') 
+        values = "({},'{}',{})".format(graph_ID, graph_name, owner_ID)
+        db.insert_values('DAG', values)
+
+    def restore_graph(self, graph_ID):
+        db = DataManager(DATABASE)
+
+        # Restore Relation
+        predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
+        cursor = db.select_from_where('begin_TID, end_TID',
+                                      'DAG_Node, DAG_Edge', predicate)
         result = cursor.fetchall()
         all_nodes = set([i for item in result for i in item])
         for node in all_nodes:
             self.graph[node] = set()
         for item in result:
             self.graph[item[0]].add(item[1])
+        cursor.close()
+
+        # Restore name
+        cursor = db.select_from_where('graph_name', 'DAG',
+                                      "graph_ID = '{}' ".format(graph_ID))
+        self.graph_name = cursor.fetchone()[0]
         cursor.close()
 
     def size(self):
@@ -86,6 +99,9 @@ class DAG(object):
             return l
         else:
             raise ValueError('graph is not acyclic')
+
+    def rename_graph(self, new_graph_name):
+        self.graph_name = new_graph_name
 
     def add_node(self, taskID, graph=None):
         if not graph:
@@ -174,4 +190,3 @@ class DAG(object):
             filter(
                 lambda node: node in nodes_seen,
                 self.topological_sort(graph=graph)))
-
