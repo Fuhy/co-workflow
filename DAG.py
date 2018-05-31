@@ -1,18 +1,34 @@
 from copy import copy, deepcopy
 from collections import OrderedDict, deque
+from Database import DataManager
+from PathOrName import *
+from HashMaker import HashMaker
 
 
 class DAG(object):
     """docstring for DAG"""
 
-    def __init__(self):
-        self.reset_graph()
-
-    def reset_graph(self):
+    def __init__(self, graph_ID,owner_ID):
         self.graph = OrderedDict()
 
+        if HashMaker().check_graph_exist(graph_ID):
+            self.restore_graph()
+            return True
+        else:
+            False
 
+            
 
+    def restore_graph(self):
+        db = DataManager(DATABASE)
+        cursor = db.select_from_where('begin_TID, end_TID','DAG_Node, DAG_Edge','begin_TID = task_ID') 
+        result = cursor.fetchall()
+        all_nodes = set([i for item in result for i in item])
+        for node in all_nodes:
+            self.graph[node] = set()
+        for item in result:
+            self.graph[item[0]].add(item[1])
+        cursor.close()
 
     def size(self):
         return len(self.graph)
@@ -71,11 +87,6 @@ class DAG(object):
         else:
             raise ValueError('graph is not acyclic')
 
-
-
-
-
-
     def add_node(self, taskID, graph=None):
         if not graph:
             graph = self.graph
@@ -113,12 +124,6 @@ class DAG(object):
         if dep_node not in graph.get(ind_node, []):
             raise KeyError('this edge does not exist in graph')
         graph[ind_node].remove(dep_node)
-
-
-
-
-
-
 
     def show_predecessors(self, node, graph=None):
         if graph is None:
@@ -170,6 +175,3 @@ class DAG(object):
                 lambda node: node in nodes_seen,
                 self.topological_sort(graph=graph)))
 
-
-
-        
