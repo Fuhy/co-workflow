@@ -66,3 +66,49 @@ class DataManager(object):
 
         self.connect.commit()
         return True
+
+    def delete_from_where(self, where, predicate=""):
+        """Delete from table where predicates are True.
+
+        Return:
+            Return True If it's SUCCESS,
+            otherwise return FALSE.
+        """
+        if predicate == "":
+            command = "DELETE FROM {} ;".format(where)
+        else:
+            command = "DELETE FROM {} WHERE {} ;".format(where, predicate)
+
+        try:
+            with self.connect.cursor() as cursor:
+                cursor.execute(command)
+        except Exception:
+            print(command)
+            self.connect.rollback()
+            return False
+
+        self.connect.commit()
+        return True
+
+    def update_set_where(self, where, operate, predicate=""):
+        """Update table Set operates where predicate is True.
+
+        Return:
+            Return True If it's SUCCESS,
+            otherwise return FALSE.
+        """
+        if predicate == "":
+            command = "UPDATE {} SET {} ;".format(where, operate)
+        else:
+            command = "UPDATE {} SET {} WHERE {} ;".format(where, operate, predicate)
+
+        try:
+            with self.connect.cursor() as cursor:
+                cursor.execute(command)
+        except Exception:
+            print(command)
+            self.connect.rollback()
+            return False
+
+        self.connect.commit()
+        return True
