@@ -1,18 +1,47 @@
 from copy import copy, deepcopy
 from collections import OrderedDict, deque
+from Database import DataManager
+from PathOrName import *
+from HashMaker import HashMaker
 
 
 class DAG(object):
     """docstring for DAG"""
 
-    def __init__(self):
-        self.reset_graph()
-
-    def reset_graph(self):
+    def __init__(self, graph_ID, owner_ID="", graph_name="new_task"):
         self.graph = OrderedDict()
+        self.graph_name = graph_name
 
+        if HashMaker().check_graph_exist(graph_ID):
+            self.restore_graph(graph_ID)
+        else:
+            self.init_graph(graph_ID, graph_name, owner_ID)
 
+    def init_graph(self, graph_ID, graph_name, owner_ID):
+        db = DataManager(DATABASE)
+        values = "({},'{}',{})".format(graph_ID, graph_name, owner_ID)
+        db.insert_values('DAG', values)
 
+    def restore_graph(self, graph_ID):
+        db = DataManager(DATABASE)
+
+        # Restore Relation
+        predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
+        cursor = db.select_from_where('begin_TID, end_TID',
+                                      'DAG_Node, DAG_Edge', predicate)
+        result = cursor.fetchall()
+        all_nodes = set([i for item in result for i in item])
+        for node in all_nodes:
+            self.graph[node] = set()
+        for item in result:
+            self.graph[item[0]].add(item[1])
+        cursor.close()
+
+        # Restore name
+        cursor = db.select_from_where('graph_name', 'DAG',
+                                      "graph_ID = '{}' ".format(graph_ID))
+        self.graph_name = cursor.fetchone()[0]
+        cursor.close()
 
     def size(self):
         return len(self.graph)
@@ -71,10 +100,8 @@ class DAG(object):
         else:
             raise ValueError('graph is not acyclic')
 
-
-
-
-
+    def rename_graph(self, new_graph_name):
+        self.graph_name = new_graph_name
 
     def add_node(self, taskID, graph=None):
         if not graph:
@@ -113,12 +140,6 @@ class DAG(object):
         if dep_node not in graph.get(ind_node, []):
             raise KeyError('this edge does not exist in graph')
         graph[ind_node].remove(dep_node)
-
-
-
-
-
-
 
     def show_predecessors(self, node, graph=None):
         if graph is None:
@@ -169,7 +190,3 @@ class DAG(object):
             filter(
                 lambda node: node in nodes_seen,
                 self.topological_sort(graph=graph)))
-
-
-
-        
