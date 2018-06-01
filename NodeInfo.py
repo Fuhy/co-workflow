@@ -1,5 +1,13 @@
+from Database import DataManager
+from PathOrName import *
+from HashMaker import HashMaker
+
+
 class NodeInfo(object):
     """docstring for NodeInfo
+
+    Cautions:
+        The table `DAG_Node` must be set up BEFORE you instantiate a NEW node!
 
     Attributes:
         task_ID: A string for identifing tasks.
@@ -10,14 +18,44 @@ class NodeInfo(object):
         status: Bool value.
     """
 
-    def __init__(self, owner_ID, task_ID, task_name):
+    def __init__(self, task_ID, owner_ID="", task_name=""):
         self.task_ID = task_ID
         self.owner_ID = owner_ID
-        self.task_name = 'new_task'
+        self.task_name = 'New Task'
         self.group = set()
         self.version = 0
         self.status = False
 
+        if HashMaker().check_task_exist(task_ID):
+            self.restore_node(task_ID)
+        else:
+            self.init_node(task_ID, owner_ID)
+
+    #TODO(): DAG_Node -> NodeInfo
+    # A task must binds to a graph.
+    def init_node(self, task_ID, owner_ID):
+        db = DataManager(DATABASE)
+
+        owner_ID = db.select_from_where(
+            'owner_id', 'DAG',
+            "graph_id = (SELECT graph_id FROM DAG_Node WHERE task_id = {})".
+            format(task_ID)).fetchone()[0]
+
+        values = "('{}','{}','{}','{}','{}')".format(task_ID, owner_ID,
+                                                     'New Task', 0, False)
+        db.insert_values('NodeInfo', values)
+        db.close()
+
+    def restore_node(self, task_ID):
+        db = DataManager(DATABASE)
+        (self.task_ID, self.owner_ID, self.task_name,
+         self.version, self.status) = db.select_from_where(
+             '*', 'NodeInfo', "task_ID = {}".format(task_ID)).fetchall()[0]
+        group = db.select_from_where(
+            'user_id', 'NodeGroup', "task_ID = {}".format(task_ID)).fetchall()
+        for member in [member for item in group for member in item]:
+            self.group.add(member)
+        db.close()
 
     def get_task_ID(self):
         return self.task_ID
@@ -33,7 +71,6 @@ class NodeInfo(object):
 
     def get_group(self):
         return self.group()
-
 
     def update_version(self):
         self.version += 1

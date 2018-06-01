@@ -6,11 +6,18 @@ from HashMaker import HashMaker
 
 
 class DAG(object):
-    """docstring for DAG"""
+    """docstring for DAG
 
-    def __init__(self, graph_ID, owner_ID="", graph_name="new_task"):
+    Cautions:
+        `owner_ID` must be given when initialize a graph!
+
+    """
+
+    def __init__(self, graph_ID, owner_ID="", graph_name="New Project"):
         self.graph = OrderedDict()
         self.graph_name = graph_name
+        self.graph_ID = graph_ID
+        self.owner_ID = owner_ID
 
         if HashMaker().check_graph_exist(graph_ID):
             self.restore_graph(graph_ID)
@@ -21,6 +28,7 @@ class DAG(object):
         db = DataManager(DATABASE)
         values = "({},'{}',{})".format(graph_ID, graph_name, owner_ID)
         db.insert_values('DAG', values)
+        db.close()
 
     def restore_graph(self, graph_ID):
         db = DataManager(DATABASE)
@@ -41,7 +49,7 @@ class DAG(object):
         cursor = db.select_from_where('graph_name', 'DAG',
                                       "graph_ID = '{}' ".format(graph_ID))
         self.graph_name = cursor.fetchone()[0]
-        cursor.close()
+        db.close()
 
     def size(self):
         return len(self.graph)
