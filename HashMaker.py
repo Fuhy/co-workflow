@@ -47,9 +47,9 @@ class HashMaker(Singleton):
         else:
             return value
 
-    def check_user_exist(self, ID):
+    def check_user_exist(self, ID, table='User'):
         predicate = " `user_ID` = " + '"' + str(ID) + '"'
-        result = self.db.select_from_where('*', 'User', predicate)
+        result = self.db.select_from_where('*', table, predicate)
         if result.rowcount == 0:
             return False
         else:
@@ -63,20 +63,18 @@ class HashMaker(Singleton):
         else:
             return True
 
-    def check_task_exist(self, ID):
+    def check_task_exist(self, ID, table='NodeInfo'):
         predicate = " `task_ID` = " + '"' + str(ID) + '"'
-        result = self.db.select_from_where('*', 'NodeInfo', predicate)
+        result = self.db.select_from_where('*', table, predicate)
         if result.rowcount == 0:
             return False
         else:
             return True
 
-    def check_graph_exist(self, ID):
+    def check_graph_exist(self, ID, table='DAG'):
         predicate = " `graph_ID` = " + '"' + str(ID) + '"'
-        result = self.db.select_from_where('*', 'DAG', predicate)
+        result = self.db.select_from_where('*', table, predicate)
         if result.rowcount == 0:
             return False
         else:
             return True
-
-
