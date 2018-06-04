@@ -35,16 +35,12 @@ class NodeInfo(object):
     # A task must binds to a graph.
     def init_node(self, task_ID, owner_ID):
         db = DataManager(DATABASE)
-
-        owner_ID = db.select_from_where(
+        self.owner_ID = db.select_from_where(
             'owner_id', 'DAG',
             "graph_id = (SELECT graph_id FROM DAG_Node WHERE task_id = {})".
             format(task_ID)).fetchone()[0]
-
-        values = "('{}','{}','{}','{}','{}')".format(task_ID, owner_ID,
-                                                     'New Task', 0, False)
-        db.insert_values('NodeInfo', values)
         db.close()
+        self.save_state()
 
     def restore_node(self, task_ID):
         db = DataManager(DATABASE)
@@ -56,6 +52,23 @@ class NodeInfo(object):
         for member in [member for item in group for member in item]:
             self.group.add(member)
         db.close()
+
+    def save_state(self):
+        if HashMaker.check_user_exist():
+            db = Database.DataManager(DATABASE)
+            attributes = ()
+            values = (self.owner_ID, self.task_name,
+                      self.version, self.status)
+            db.update_set_where('User', attributes, values,
+                                " task_id = '{}' ".format(self.task_ID))
+            #TODO(): NODE_GROUP & DELETE
+        else:
+            db = DataManager(DATABASE)
+            values = "('{}','{}','{}','{}','{}')".format(
+                self.task_ID, self.owner_ID, self.task_name, self.version,
+                self.status)
+            db.insert_values('NodeInfo', values)
+            db.close()
 
     def get_task_ID(self):
         return self.task_ID

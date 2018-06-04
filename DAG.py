@@ -13,11 +13,8 @@ class DAG(object):
 
     """
 
-    def __init__(self, graph_ID, owner_ID="", graph_name="New Project"):
+    def __init__(self, graph_ID, owner_ID=None, graph_name="New Project"):
         self.graph = OrderedDict()
-        self.graph_name = graph_name
-        self.graph_ID = graph_ID
-        self.owner_ID = owner_ID
 
         if HashMaker().check_graph_exist(graph_ID):
             self.restore_graph(graph_ID)
@@ -25,10 +22,10 @@ class DAG(object):
             self.init_graph(graph_ID, graph_name, owner_ID)
 
     def init_graph(self, graph_ID, graph_name, owner_ID):
-        db = DataManager(DATABASE)
-        values = "({},'{}',{})".format(graph_ID, graph_name, owner_ID)
-        db.insert_values('DAG', values)
-        db.close()
+        self.graph_name = graph_name
+        self.graph_ID = graph_ID
+        self.owner_ID = owner_ID
+        self.save_state()
 
     def restore_graph(self, graph_ID):
         db = DataManager(DATABASE)
@@ -43,13 +40,28 @@ class DAG(object):
             self.graph[node] = set()
         for item in result:
             self.graph[item[0]].add(item[1])
-        cursor.close()
-
         # Restore name
         cursor = db.select_from_where('graph_name', 'DAG',
                                       "graph_ID = '{}' ".format(graph_ID))
         self.graph_name = cursor.fetchone()[0]
         db.close()
+
+    def save_state(self):
+        if HashMaker().check_graph_exist():
+            db = Database.DataManager(DATABASE)
+            # DAG
+            attributes = ('graph_name', 'owner_ID')
+            values = (self.graph_name, self.owner_ID)
+            db.update_set_where('DAG', attributes, values,
+                                " graph_id = '{}' ".format(self.graph_ID))
+            #TODO(): DAG_GROUP AND DAG_EDGE AND DAG_Node
+            #TODO(): DAG_NODE DELETE
+        else:
+            db = DataManager(DATABASE)
+            values = "({},'{}',{})".format(self.graph_ID, self.graph_name,
+                                           self.owner_ID)
+            db.insert_values('DAG', values)
+            db.close()
 
     def size(self):
         return len(self.graph)
