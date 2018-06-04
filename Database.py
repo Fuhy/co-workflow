@@ -1,18 +1,18 @@
 import pymysql
+from PathOrName import *
 
 
 class DataManager(object):
     """docstring for DataManager"""
 
-    def __init__(self, database):
-        self.connect = self._connect(database)
+    def __init__(self,
+                 database=DATABASE,
+                 host=DBHOST,
+                 user=DBUSER,
+                 passwd=DBPASSWORD):
+        self.connect = self._connect(database, host, user, passwd)
 
-    def _connect(self,
-                 database,
-                 host='localhost',
-                 user='root',
-                 passwd='',
-                 charset='utf8'):
+    def _connect(self, database, host, user, passwd, charset='utf8'):
         return pymysql.connect(
             host, user, passwd, db=database, charset=charset)
 
@@ -90,18 +90,36 @@ class DataManager(object):
         self.connect.commit()
         return True
 
-    def update_set_where(self, where, operate, predicate=""):
-        """Update table Set operates where predicate is True.
+    def update_set_where(self, where, attributes, values, predicate=""):
+        """Update table Set the attributes in the values where predicate is True.
+
+        Args:
+            attributes: a tuple of the attributes you wanna modified.
+            values: the values you wanna assign them into the attributes. 
+
+        Cautions:
+            attributes and values should be passed in the correct orders.
 
         Return:
             Return True If it's SUCCESS,
             otherwise return FALSE.
         """
-        if predicate == "":
-            command = "UPDATE {} SET {} ;".format(where, operate)
-        else:
-            command = "UPDATE {} SET {} WHERE {} ;".format(where, operate, predicate)
+        if len(attributes) != len(values):
+            return False
 
+        manipulation = []
+
+        for i, name in enumerate(attributes):
+            if i != len(attributes) - 1:
+                manipulation.append(" `{}` = '{}' , ".format(name, values[i]))
+            else:
+                manipulation.append(" `{}` = '{}' ".format(name, values[i]))
+
+        if predicate == "":
+            command = "UPDATE {} SET {} ;".format(where, "".join(manipulation))
+        else:
+            command = "UPDATE {} SET {} WHERE {} ;".format(
+                where, "".join(manipulation), predicate)
         try:
             with self.connect.cursor() as cursor:
                 cursor.execute(command)
