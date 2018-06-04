@@ -47,7 +47,7 @@ class DAG(object):
         db.close()
 
     def save_state(self):
-        if HashMaker().check_graph_exist():
+        if HashMaker().check_graph_exist(graph_ID):
             db = Database.DataManager(DATABASE)
             # DAG
             attributes = ('graph_name', 'owner_ID')
