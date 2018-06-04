@@ -54,8 +54,8 @@ class NodeInfo(object):
         db.close()
 
     def save_state(self):
-        if HashMaker.check_user_exist(self.task_ID):
-            db = Database.DataManager(DATABASE)
+        if HashMaker().check_task_exist(self.task_ID):
+            db = DataManager(DATABASE)
             attributes = ()
             values = (self.owner_ID, self.task_name,
                       self.version, self.status)

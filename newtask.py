@@ -8,15 +8,8 @@ import pymysql
 
 
 
-def fetch_gid(graph_name)
-    db = Database.DataManager(DATABASE)
-    predicate = "`graph_name` = '{}' ".format(graph_name)
-    result = db.select_from_where('graph_id', 'DAG', predicate).fetchone()
-    db.close()
-    return result[0]
-
 def fetch_uid(account):
-    db = Database.DataManager(DATABASE)
+    db = DataManager(DATABASE)
     predicate = "`user_name` = '{}' ".format(account)
     result = db.select_from_where('user_id', 'User', predicate).fetchone()
     db.close()
@@ -24,7 +17,7 @@ def fetch_uid(account):
 
 
 def fetch_nid(node_name):
-    db = Database.DataManager(DATABASE)
+    db = DataManager(DATABASE)
     predicate = "`task_name` = '{}' ".format(node_name)
     result = db.select_from_where('task_id', 'NodeInfo', predicate).fetchone()
     db.close()
@@ -34,7 +27,7 @@ def fetch_nid(node_name):
 
 def new_project(account, graph_name="New Project"):
     #create a new project
-    g_id = HashMaker.hash_graph()
+    g_id = HashMaker().hash_graph()
     u_id = fetch_uid(account)
     task = DAG(g_id, u_id, graph_name)
     #create the new DAG
@@ -42,11 +35,7 @@ def new_project(account, graph_name="New Project"):
     task.rename_graph(graph_name)
     #rename the DAG
 
-    db = Database.DataManager(DATABASE)
-
-    values = "({},'{}',{})".format(g_id, graph_name, u_id)
-    db.insert_values('DAG', values)
-    #insert to DAG
+    db = DataManager(DATABASE)
 
     values = "({},{})".format(g_id, u_id)
     db.insert_values('DAG_Group', values)
@@ -58,26 +47,25 @@ def new_project(account, graph_name="New Project"):
 
 
 
-def new_task(account, graph_name, task_name = "New Task"):
+def new_task(account, graph_id, task_name = "New Task"):
     #create a new task
     u_id = fetch_uid(account)
-    g_id = fetch_gid(graph_name)
-    task = DAG(g_id, u_id)
+    task = DAG(graph_id, u_id)
+    n_id = HashMaker().hash_task()
 
-    n_id = HashMaker.hash_task()
-    task.add_node(n_id)
-    node_info = NodeInfo(n_id, u_id, task_name)
-    #add the first node
+    db = DataManager(DATABASE)
 
-    db = Database.DataManager(DATABASE)
 
-    values = "({},{})".format(g_id, n_id)
+    values = "({},{})".format(n_id, graph_id)
     db.insert_values('DAG_Node', values)
     #insert to DAG_Node
 
-    values = "({},{},'{}',{},{})".format(n_id, u_id, task_name, node_info.version, node_info.status)
-    db.insert_values('NodeInfo', values)
-    #insert to NodeInfo
+    task.add_node(n_id)
+    node_info = NodeInfo(n_id, u_id, task_name)
+
+    #add the first node
+
+
 
     values = "({},{})".format(n_id, u_id)
     db.insert_values('NodeGroup', values)
@@ -85,4 +73,14 @@ def new_task(account, graph_name, task_name = "New Task"):
     
     db.close()
 
+    node_info.rename_task(task_name)
+    node_info.save_state()
+
     return node_info
+
+
+
+
+
+a = new_project('taylor', 'damn')
+b = new_task('taylor', a.graph_ID, 'nihao')
