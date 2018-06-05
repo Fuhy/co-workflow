@@ -56,10 +56,9 @@ class NodeInfo(object):
     def save_state(self):
         if HashMaker().check_task_exist(self.task_ID):
             db = DataManager(DATABASE)
-            attributes = ()
-            values = (self.owner_ID, self.task_name,
-                      self.version, self.status)
-            db.update_set_where('User', attributes, values,
+            attributes = ('owner_ID', 'task_name', 'version', 'status')
+            values = (self.owner_ID, self.task_name, self.version, self.status)
+            db.update_set_where('NodeInfo', attributes, values,
                                 " task_id = '{}' ".format(self.task_ID))
             #TODO(): NODE_GROUP & DELETE
         else:

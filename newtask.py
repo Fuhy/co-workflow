@@ -82,5 +82,3 @@ def new_task(account, graph_id, task_name = "New Task"):
 
 
 
-a = new_project('taylor', 'damn')
-b = new_task('taylor', a.graph_ID, 'nihao')
