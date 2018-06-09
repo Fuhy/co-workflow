@@ -1,7 +1,7 @@
 from Database import DataManager
 from PathOrName import *
 from HashMaker import HashMaker
-
+from Client import *
 
 class NodeInfo(object):
     """docstring for NodeInfo
@@ -34,40 +34,33 @@ class NodeInfo(object):
     #TODO(): DAG_Node -> NodeInfo
     # A task must binds to a graph.
     def init_node(self, task_ID, owner_ID):
-        db = DataManager(DATABASE)
-        self.owner_ID = db.select_from_where(
+        self.owner_ID = select(
             'owner_id', 'DAG',
             "graph_id = (SELECT graph_id FROM DAG_Node WHERE task_id = {})".
-            format(task_ID)).fetchone()[0]
-        db.close()
+            format(task_ID))[0][0]
         self.save_state()
 
     def restore_node(self, task_ID):
-        db = DataManager(DATABASE)
-        (self.task_ID, self.owner_ID, self.task_name,
-         self.version, self.status) = db.select_from_where(
-             '*', 'NodeInfo', "task_ID = {}".format(task_ID)).fetchall()[0]
-        group = db.select_from_where(
-            'user_id', 'NodeGroup', "task_ID = {}".format(task_ID)).fetchall()
+        (self.task_ID, self.owner_ID,
+         self.task_name, self.version, self.status) = select(
+             '*', 'NodeInfo', "task_ID = {}".format(task_ID))[0]
+        group = select('user_id', 'NodeGroup', "task_ID = {}".format(task_ID))
         for member in [member for item in group for member in item]:
             self.group.add(member)
-        db.close()
 
     def save_state(self):
         if HashMaker().check_task_exist(self.task_ID):
-            db = DataManager(DATABASE)
-            attributes = ('owner_ID', 'task_name', 'version', 'status')
-            values = (self.owner_ID, self.task_name, self.version, self.status)
-            db.update_set_where('NodeInfo', attributes, values,
-                                " task_id = '{}' ".format(self.task_ID))
+            attributes = "'owner_ID','task_name','version','status'"
+            values = "'{}','{}','{}','{}'".format(
+                self.owner_ID, self.task_name, self.version, self.status)
+            update('NodeInfo', attributes, values, " task_id = '{}' ".format(
+                self.task_ID))
             #TODO(): NODE_GROUP & DELETE
         else:
-            db = DataManager(DATABASE)
             values = "('{}','{}','{}','{}','{}')".format(
                 self.task_ID, self.owner_ID, self.task_name, self.version,
                 self.status)
-            db.insert_values('NodeInfo', values)
-            db.close()
+            insert('NodeInfo', values)
 
     def get_task_ID(self):
         return self.task_ID

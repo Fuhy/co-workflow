@@ -19,7 +19,7 @@ class DataManager(object):
     def close(self):
         self.connect.close()
 
-    def select_from_where(self, what="", where="", predicate=""):
+    def select_from_where(self, what, where, predicate=""):
         """Select something from table where predicates are True.
 
         Return:
@@ -69,6 +69,10 @@ class DataManager(object):
 
     def delete_from_where(self, where, predicate=""):
         """Delete from table where predicates are True.
+
+        Cautions:
+            SUCCESS only means there is no FATAL ERROR when processing.
+            Your commands may cause NOTHING deleted but it still returns True.
 
         Return:
             Return True If it's SUCCESS,

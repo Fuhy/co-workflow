@@ -3,6 +3,7 @@ from collections import OrderedDict, deque
 from Database import DataManager
 from PathOrName import *
 from HashMaker import HashMaker
+from Client import *
 
 
 class DAG(object):
@@ -15,6 +16,7 @@ class DAG(object):
 
     def __init__(self, graph_ID, owner_ID=None, graph_name="New Project"):
         self.graph = OrderedDict()
+        self.graph_ID = graph_ID
 
         if HashMaker().check_graph_exist(graph_ID):
             self.restore_graph(graph_ID)
@@ -23,45 +25,38 @@ class DAG(object):
 
     def init_graph(self, graph_ID, graph_name, owner_ID):
         self.graph_name = graph_name
-        self.graph_ID = graph_ID
         self.owner_ID = owner_ID
         self.save_state()
 
     def restore_graph(self, graph_ID):
-        db = DataManager(DATABASE)
-
         # Restore Relation
         predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
-        cursor = db.select_from_where('begin_TID, end_TID',
-                                      'DAG_Node, DAG_Edge', predicate)
-        result = cursor.fetchall()
+        result = select('begin_TID, end_TID', 'DAG_Node, DAG_Edge', predicate)
+
         all_nodes = set([i for item in result for i in item])
         for node in all_nodes:
             self.graph[node] = set()
         for item in result:
             self.graph[item[0]].add(item[1])
         # Restore name
-        cursor = db.select_from_where('graph_name', 'DAG',
-                                      "graph_ID = '{}' ".format(graph_ID))
-        self.graph_name = cursor.fetchone()[0]
-        db.close()
+        self.graph_name = select('graph_name', 'DAG',
+                                 "graph_ID = '{}' ".format(graph_ID))[0][0]
+        self.owner_ID = select('owner_ID', 'DAG',
+                               "graph_ID = '{}' ".format(graph_ID))[0][0]
 
     def save_state(self):
         if HashMaker().check_graph_exist(self.graph_ID):
-            db = Database.DataManager(DATABASE)
             # DAG
-            attributes = ('graph_name', 'owner_ID')
-            values = (self.graph_name, self.owner_ID)
-            db.update_set_where('DAG', attributes, values,
-                                " graph_id = '{}' ".format(self.graph_ID))
+            attributes = "'graph_name','owner_ID'"
+            values = "'{}','{}'".format(self.graph_name, self.owner_ID)
+            update('DAG', attributes, values, " graph_id = '{}' ".format(
+                self.graph_ID))
             #TODO(): DAG_GROUP AND DAG_EDGE AND DAG_Node
             #TODO(): DAG_NODE DELETE
         else:
-            db = DataManager(DATABASE)
             values = "({},'{}',{})".format(self.graph_ID, self.graph_name,
                                            self.owner_ID)
-            db.insert_values('DAG', values)
-            db.close()
+            insert('DAG', values)
 
     def size(self):
         return len(self.graph)
@@ -140,6 +135,8 @@ class DAG(object):
         for node, edges in graph.items():
             if taskID in edges:
                 edges.remove(taskID)
+
+        #
 
     def add_edge(self, ind_node, dep_node, graph=None):
         if not graph:
