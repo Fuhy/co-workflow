@@ -29,7 +29,15 @@ def insert(where, values, which=""):
 
 
 def update(where, attributes, values, predicate=""):
-    """ No space was allowed between comma
+    """Update table Set the attributes in the values where predicate is True.
+
+    Cautions:
+        No space was allowed beside comma!
+
+    Args:
+        attributes: a string of the attributes seperated by ','.
+        values: a string of values you wanna assign them into the attributes, also seperated by comma. 
+
     """
     payload = {}
     payload['table'] = where

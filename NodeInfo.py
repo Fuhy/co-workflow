@@ -3,6 +3,7 @@ from PathOrName import *
 from HashMaker import HashMaker
 from Client import *
 
+
 class NodeInfo(object):
     """docstring for NodeInfo
 
@@ -25,6 +26,8 @@ class NodeInfo(object):
         self.group = set()
         self.version = 0
         self.status = False
+        self._graph_ID = select('graph_id', 'DAG_Node',
+                                'task_id = {}'.format(task_ID))
 
         if HashMaker().check_task_exist(task_ID):
             self.restore_node(task_ID)
@@ -55,12 +58,13 @@ class NodeInfo(object):
                 self.owner_ID, self.task_name, self.version, self.status)
             update('NodeInfo', attributes, values, " task_id = '{}' ".format(
                 self.task_ID))
-            #TODO(): NODE_GROUP & DELETE
         else:
             values = "('{}','{}','{}','{}','{}')".format(
                 self.task_ID, self.owner_ID, self.task_name, self.version,
                 self.status)
             insert('NodeInfo', values)
+
+        self.update_version()
 
     def get_task_ID(self):
         return self.task_ID
@@ -79,25 +83,26 @@ class NodeInfo(object):
 
     def update_version(self):
         self.version += 1
+        update('NodeInfo',"'version'",self.version,"task_ID = {}".format(self.task_ID))
 
     def reverse_status(self):
         self.status = not self.status
-
-    # TODO(): Handle the exception AND the database
-    # check_user_exist()
-    # User should be identified with ID
-    # or there will be lots of modifying when rename a user.
 
     def alter_owner(self, new_owner_ID):
         self.owner_ID = new_owner_ID
 
     def add_group_member(self, member_list):
         for member in member_list:
-            self.group.add(member)
+            if insert('NodeGroup', "({},'{}')".format(self.task_ID, member)):
+                self.group.add(member)
+                self.update_version()
 
     def delete_group_member(self, member_list):
         for member in member_list:
-            self.group.remove(member)
+            if delete('NodeGroup', " task_id = {} and user_id = {} ".format(
+                    self.task_ID, member)):
+                self.group.remove(member)
+                self.update_version()
 
     def alter_status(self, new_status):
         self.status = new_status

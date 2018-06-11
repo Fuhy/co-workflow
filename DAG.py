@@ -33,11 +33,13 @@ class DAG(object):
         predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
         result = select('begin_TID, end_TID', 'DAG_Node, DAG_Edge', predicate)
 
-        all_nodes = set([i for item in result for i in item])
+        all_nodes = set([i for item in result for i in item]) and set([i[0] for i in select('task_id','DAG_Node')])
+
         for node in all_nodes:
             self.graph[node] = set()
         for item in result:
             self.graph[item[0]].add(item[1])
+
         # Restore name
         self.graph_name = select('graph_name', 'DAG',
                                  "graph_ID = '{}' ".format(graph_ID))[0][0]
@@ -51,8 +53,6 @@ class DAG(object):
             values = "'{}','{}'".format(self.graph_name, self.owner_ID)
             update('DAG', attributes, values, " graph_id = '{}' ".format(
                 self.graph_ID))
-            #TODO(): DAG_GROUP AND DAG_EDGE AND DAG_Node
-            #TODO(): DAG_NODE DELETE
         else:
             values = "({},'{}',{})".format(self.graph_ID, self.graph_name,
                                            self.owner_ID)
@@ -121,22 +121,24 @@ class DAG(object):
     def add_node(self, taskID, graph=None):
         if not graph:
             graph = self.graph
-        if taskID in graph:
-            raise KeyError('node %s already exists' % taskID)
-        graph[taskID] = set()
+        if insert('DAG_Node',"({},{})".format(taskID,self.graph_ID)):
+            graph[taskID] = set()
+
 
     def delete_node(self, taskID, graph=None):
         if not graph:
             graph = self.graph
-        if taskID not in graph:
-            raise KeyError('node %s does not exist' % taskID)
+        
         graph.pop(taskID)
 
         for node, edges in graph.items():
             if taskID in edges:
                 edges.remove(taskID)
 
-        #
+        # DATABASE 
+        delete('DAG_Node'," graph_ID = {} and task_ID = {} ".format(self.graph_ID,taskID))
+        delete('DAG_Edge'," end_TID = {} ".format(taskID))
+
 
     def add_edge(self, ind_node, dep_node, graph=None):
         if not graph:
@@ -147,6 +149,7 @@ class DAG(object):
         test_graph[ind_node].add(dep_node)
         is_valid, message = self.validate(test_graph)
         if is_valid:
+            insert('DAG_Edge',"({},{})".format(ind_node,dep_node))
             graph[ind_node].add(dep_node)
         else:
             raise DAGValidationError()
@@ -156,6 +159,7 @@ class DAG(object):
             graph = self.graph
         if dep_node not in graph.get(ind_node, []):
             raise KeyError('this edge does not exist in graph')
+        delete('DAG_Edge',"begin_TID = {} and end_TID = {} ".format(ind_node,dep_node))
         graph[ind_node].remove(dep_node)
 
     def show_predecessors(self, node, graph=None):
