@@ -17,13 +17,17 @@ def write_to_stream(data):
     # Set up a read-able stream
     return bytes(out_s.getvalue())
 
+
 def read_from_stream(in_s):
     result = []
     while True:
         try:
             o = pickle.load(in_s)
         except EOFError:
-            return result
+            if (type(result[0]) is tuple):
+                return result
+            else:
+                return "".join(result)
         else:
             # Do something for each object
             result.append(o)

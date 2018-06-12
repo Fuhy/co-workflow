@@ -74,4 +74,7 @@ class HashMaker(Singleton):
             return True
 
 
-
+def sha1_encode(password):
+    result = hashlib.sha1()
+    result.update(password.encode())
+    return result.hexdigest()
