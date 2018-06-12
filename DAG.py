@@ -2,7 +2,7 @@ from copy import copy, deepcopy
 from collections import OrderedDict, deque
 from Database import DataManager
 from PathOrName import *
-from HashMaker import HashMaker
+from HashMaker import *
 from Client import *
 
 

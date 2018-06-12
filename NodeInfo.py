@@ -1,6 +1,6 @@
 from Database import DataManager
 from PathOrName import *
-from HashMaker import HashMaker
+from HashMaker import *
 from Client import *
 
 

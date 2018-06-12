@@ -1,6 +1,5 @@
 import random
-from HashMaker import HashMaker
-from Register import *
+from HashMaker import *
 from Client import *
 
 
