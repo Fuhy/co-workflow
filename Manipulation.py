@@ -60,3 +60,15 @@ def new_task(account, graph_id, task_name="New Task"):
     node_info.save_state()
 
     return node_info
+
+
+
+def describe_task(task_ID,abstract,new_title="",due_date=""):
+    task = NodeInfo(task_ID)
+    return task.describe_task(abstract,new_title,due_date)
+
+
+
+    
+
+

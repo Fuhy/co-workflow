@@ -42,6 +42,7 @@ class NodeInfo(object):
             "graph_id = (SELECT graph_id FROM DAG_Node WHERE task_id = {})".
             format(task_ID))[0][0]
         self.save_state()
+        insert('NodeDetails', "({})".format(self.task_ID), "task_ID")
 
     def restore_node(self, task_ID):
         (self.task_ID, self.owner_ID,
@@ -83,7 +84,8 @@ class NodeInfo(object):
 
     def update_version(self):
         self.version += 1
-        update('NodeInfo',"'version'",self.version,"task_ID = {}".format(self.task_ID))
+        update('NodeInfo', "'version'", self.version, "task_ID = {}".format(
+            self.task_ID))
 
     def reverse_status(self):
         self.status = not self.status
@@ -109,3 +111,17 @@ class NodeInfo(object):
 
     def rename_task(self, new_task_name):
         self.task_name = new_task_name
+
+    def describe_task(self, abstract, new_title="", due_date=""):
+        if new_title == "":
+            new_title = self.task_name
+        else:
+            self.rename_task(new_title)
+            self.save_state()
+        if due_date == "":
+            return update('NodeDetails', "'abstract'", "'{}'".format(
+                abstract), "task_ID = {}".format(self.task_ID))
+        else:
+            return update('NodeDetails', "'abstract','due_date'",
+                          "'{}','{}'".format(abstract, due_date),
+                          "task_ID = {}".format(self.task_ID))
