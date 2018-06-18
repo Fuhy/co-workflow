@@ -53,7 +53,7 @@ def new_task(account, graph_id, task_name="New Task"):
 
     #add the first node
     values = "({},{})".format(n_id, u_id)
-    insert('NodeGroup', values)
+    insert('Node_Group', values)
     #insert to NodeGroup
 
     node_info.rename_task(task_name)

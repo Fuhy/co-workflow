@@ -24,7 +24,7 @@ def make_app():
 
 class SelectHandler(tornado.web.RequestHandler):
     def initialize(self):
-        self.db = DataManager()
+        self.db = DataManagers()
 
     def get(self, *args, **kwarg):
         token = self.get_argument('token')

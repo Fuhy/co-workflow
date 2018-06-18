@@ -57,7 +57,7 @@ class DAG(object):
             update('DAG', attributes, values, " graph_id = '{}' ".format(
                 self.graph_ID))
         else:
-            values = "({},'{}',{})".format(self.graph_ID, self.graph_name,
+            values = "({},'{}',{},'')".format(self.graph_ID, self.graph_name,
                                            self.owner_ID)
             insert('DAG', values)
 

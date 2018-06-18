@@ -42,13 +42,13 @@ class NodeInfo(object):
             "graph_id = (SELECT graph_id FROM DAG_Node WHERE task_id = {})".
             format(task_ID))[0][0]
         self.save_state()
-        insert('NodeDetails', "({})".format(self.task_ID), "task_ID")
+        insert('Node_Details', "({})".format(self.task_ID), "task_ID")
 
     def restore_node(self, task_ID):
         (self.task_ID, self.owner_ID,
          self.task_name, self.version, self.status) = select(
-             '*', 'NodeInfo', "task_ID = {}".format(task_ID))[0]
-        group = select('user_id', 'NodeGroup', "task_ID = {}".format(task_ID))
+             '*', 'Node', "task_ID = {}".format(task_ID))[0]
+        group = select('user_id', 'Node_Group', "task_ID = {}".format(task_ID))
         for member in [member for item in group for member in item]:
             self.group.add(member)
 
@@ -57,13 +57,13 @@ class NodeInfo(object):
             attributes = "'owner_ID','task_name','version','status'"
             values = "'{}','{}','{}','{}'".format(
                 self.owner_ID, self.task_name, self.version, self.status)
-            update('NodeInfo', attributes, values, " task_id = '{}' ".format(
+            update('Node', attributes, values, " task_id = '{}' ".format(
                 self.task_ID))
         else:
             values = "('{}','{}','{}','{}','{}')".format(
                 self.task_ID, self.owner_ID, self.task_name, self.version,
                 self.status)
-            insert('NodeInfo', values)
+            insert('Node', values)
 
         self.update_version()
 
@@ -84,7 +84,7 @@ class NodeInfo(object):
 
     def update_version(self):
         self.version += 1
-        update('NodeInfo', "'version'", self.version, "task_ID = {}".format(
+        update('Node', "'version'", self.version, "task_ID = {}".format(
             self.task_ID))
 
     def reverse_status(self):
@@ -95,13 +95,13 @@ class NodeInfo(object):
 
     def add_group_member(self, member_list):
         for member in member_list:
-            if insert('NodeGroup', "({},'{}')".format(self.task_ID, member)):
+            if insert('Node_Group', "({},'{}')".format(self.task_ID, member)):
                 self.group.add(member)
                 self.update_version()
 
     def delete_group_member(self, member_list):
         for member in member_list:
-            if delete('NodeGroup', " task_id = {} and user_id = {} ".format(
+            if delete('Node_Group', " task_id = {} and user_id = {} ".format(
                     self.task_ID, member)):
                 self.group.remove(member)
                 self.update_version()
@@ -119,9 +119,9 @@ class NodeInfo(object):
             self.rename_task(new_title)
             self.save_state()
         if due_date == "":
-            return update('NodeDetails', "'abstract'", "'{}'".format(
+            return update('Node_Details', "'abstract'", "'{}'".format(
                 abstract), "task_ID = {}".format(self.task_ID))
         else:
-            return update('NodeDetails', "'abstract','due_date'",
+            return update('Node_Details', "'abstract','due_date'",
                           "'{}','{}'".format(abstract, due_date),
                           "task_ID = {}".format(self.task_ID))
