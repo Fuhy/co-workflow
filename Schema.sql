@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS `User` (
 
 CREATE TABLE IF NOT EXISTS `User_Info` (
   `user_id` INT ,
-  `user_name` VARCHAR(255),
   `nick_name` VARCHAR(255),
   `gender` VARCHAR(255),
   `about` VARCHAR(255),
@@ -75,11 +74,16 @@ CREATE TABLE IF NOT EXISTS `Constraint` (
 
 
 INSERT INTO `User`(`user_id`,`user_name`,`password`) VALUES
-(111,'rick','40bd001563085fc35165329ea1ff5c5ecbdbbeef'),
-(222,'taylor','40bd001563085fc35165329ea1ff5c5ecbdbbeef'),
-(333,'sponge','40bd001563085fc35165329ea1ff5c5ecbdbbeef')
+(111,'rick1223','40bd001563085fc35165329ea1ff5c5ecbdbbeef'),
+(222,'taylor1233','40bd001563085fc35165329ea1ff5c5ecbdbbeef'),
+(333,'sponge1234','40bd001563085fc35165329ea1ff5c5ecbdbbeef')
 ;
 
+INSERT INTO `User_Info` VALUES
+(111,'rick','Male','A great engineer.'),
+(222,'taylor','Female','An experienced drawer.'),
+(333,'sponge','Male','Just a sponge.')
+;
 
 
 INSERT INTO `DAG`(`graph_id`, `graph_name`, `owner_id`) VALUES
@@ -89,6 +93,7 @@ INSERT INTO `DAG`(`graph_id`, `graph_name`, `owner_id`) VALUES
 ;
 
 INSERT INTO `DAG_Group`VALUES
+(000,111),
 (000,333),
 (001,111)
 ;

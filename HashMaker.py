@@ -1,6 +1,4 @@
 import random
-import Database
-from PathOrName import *
 from Client import *
 
 

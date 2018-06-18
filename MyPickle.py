@@ -3,7 +3,6 @@ try:
 except:
     import pickle
 from io import *
-from Database import DataManager
 
 
 def write_to_stream(data):

@@ -1,7 +1,7 @@
 | Schema       |                                                   |
 | ------------ | ------------------------------------------------- |
 | User         | **user_id**, user_name, password                  |
-| User_Info    | **user_id**, user_name, nick_name, gender, about  |
+| User_Info    | **user_id**, nick_name, gender, about             |
 | DAG          | **graph_id**, graph_name, owner_id, abstract      |
 | DAG_Group    | **graph_id**, **user_id**                         |
 | DAG_Node     | **task_id**, graph_id                             |

@@ -1,7 +1,5 @@
 from copy import copy, deepcopy
 from collections import OrderedDict, deque
-from Database import DataManager
-from PathOrName import *
 from HashMaker import *
 from Client import *
 
@@ -18,6 +16,7 @@ class DAG(object):
         self.graph = OrderedDict()
         self.graph_ID = graph_ID
         self.group = set()
+        self.abstract = ""
 
         if HashMaker().check_graph_exist(graph_ID):
             self.restore_graph(graph_ID)
@@ -48,6 +47,8 @@ class DAG(object):
         self.owner_ID = select('owner_ID', 'DAG',
                                "graph_ID = '{}' ".format(graph_ID))[0][0]
         self.group = set([i[0] for i in select('user_ID', 'DAG_Group','graph_ID = {}'.format(graph_ID))])
+
+        self.abstract = select('abstract','DAG', "graph_ID = '{}' ".format(graph_ID))[0][0]
 
     def save_state(self):
         if HashMaker().check_graph_exist(self.graph_ID):
