@@ -34,8 +34,11 @@ class SelectHandler(tornado.web.RequestHandler):
         content = self.get_argument('content')
         table = self.get_argument('table')
         predicate = self.get_argument('predicate', "")
-        result = self.db.select_from_where(content, table,
-                                           predicate).fetchall()
+        result = self.db.select_from_where(content, table, predicate)
+        if result is not None:
+            result = result.fetchall()
+        else:
+            result = []
         value = write_to_stream(result)
         self.write(value)
 
@@ -186,4 +189,3 @@ if __name__ == "__main__":
     app = make_app()
     app.listen(8888)
     tornado.ioloop.IOLoop.current().start()
-

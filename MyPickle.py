@@ -24,6 +24,8 @@ def read_from_stream(in_s):
         try:
             o = pickle.load(in_s)
         except EOFError:
+            if not result:
+                return result
             if (type(result[0]) is tuple):
                 return result
             else:

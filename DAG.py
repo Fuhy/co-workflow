@@ -47,7 +47,7 @@ class DAG(object):
                                  "graph_ID = '{}' ".format(graph_ID))[0][0]
         self.owner_ID = select('owner_ID', 'DAG',
                                "graph_ID = '{}' ".format(graph_ID))[0][0]
-        self.group = set([i[0] for i in select('user_ID', 'DAG_Group')])
+        self.group = set([i[0] for i in select('user_ID', 'DAG_Group','graph_ID = {}'.format(graph_ID))])
 
     def save_state(self):
         if HashMaker().check_graph_exist(self.graph_ID):
