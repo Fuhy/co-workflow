@@ -55,7 +55,7 @@ class HashMaker(Singleton):
         else:
             return True
 
-    def check_task_exist(self, ID, table='NodeInfo'):
+    def check_task_exist(self, ID, table='Node'):
         predicate = " `task_ID` = " + '"' + str(ID) + '"'
         result = select('*', table, predicate)
         if len(result) == 0:

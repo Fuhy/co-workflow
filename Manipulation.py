@@ -15,14 +15,15 @@ def fetch_uid(account):
 
 def fetch_nid(node_name):
     predicate = "`task_name` = '{}' ".format(node_name)
-    result = select('task_id', 'NodeInfo', predicate)[0]
+    result = select('task_id', 'Node', predicate)[0]
     return result[0]
 
 
 def new_project(account, graph_name="New Project"):
     #create a new project
     g_id = HashMaker().hash_graph()
-    u_id = fetch_uid(account)
+    u_id = account
+    # u_id = fetch_uid(account)
     task = DAG(g_id, u_id, graph_name)
     #create the new DAG
 
@@ -38,12 +39,12 @@ def new_project(account, graph_name="New Project"):
 
 def new_task(account, graph_id, task_name="New Task"):
     #create a new task
-    u_id = fetch_uid(account)
+    # u_id = fetch_uid(account)
+    u_id = account
+
     task = DAG(graph_id, u_id)
     n_id = HashMaker().hash_task()
 
-    values = "({},{})".format(n_id, graph_id)
-    insert('DAG_Node', values)
     #insert to DAG_Node
 
     task.add_node(n_id)

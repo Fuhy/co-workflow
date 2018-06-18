@@ -43,9 +43,8 @@ class NodeInfo(object):
         insert('Node_Details', "({})".format(self.task_ID), "task_ID")
 
     def restore_node(self, task_ID):
-        (self.task_ID, self.owner_ID,
-         self.task_name, self.version, self.status) = select(
-             '*', 'Node', "task_ID = {}".format(task_ID))[0]
+        (self.task_ID, self.owner_ID, self.task_name, self.version,
+         self.status) = select('*', 'Node', "task_ID = {}".format(task_ID))[0]
         group = select('user_id', 'Node_Group', "task_ID = {}".format(task_ID))
         for member in [member for item in group for member in item]:
             self.group.add(member)
@@ -117,9 +116,11 @@ class NodeInfo(object):
             self.rename_task(new_title)
             self.save_state()
         if due_date == "":
-            return update('Node_Details', "'abstract'", "'{}'".format(
-                abstract), "task_ID = {}".format(self.task_ID))
+            return update('Node_Details', "'abstract'",
+                          "'{}'".format(abstract), "task_ID = {}".format(
+                              self.task_ID))
         else:
-            return update('Node_Details', "'abstract','due_date'",
-                          "'{}','{}'".format(abstract, due_date),
-                          "task_ID = {}".format(self.task_ID))
+            return update('Node_Details',
+                          "'abstract','due_date'", "'{}','{}'".format(
+                              abstract, due_date), "task_ID = {}".format(
+                                  self.task_ID))

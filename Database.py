@@ -59,7 +59,7 @@ class DataManager(object):
         try:
             with self.connect.cursor() as cursor:
                 cursor.execute(command)
-        except Exception:
+        except Exception as e:
             print(command)
             self.connect.rollback()
             return False

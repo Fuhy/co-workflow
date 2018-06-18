@@ -33,8 +33,8 @@ class DAG(object):
         predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
         result = select('begin_TID, end_TID', 'DAG_Node, DAG_Edge', predicate)
 
-        all_nodes = set([i for item in result for i in item]) and set(
-            [i[0] for i in select('task_id', 'DAG_Node')])
+        all_nodes = set([i for item in result for i in item]) | set(
+            [i[0] for i in select('task_id', 'DAG_Node',"graph_ID = {}".format(graph_ID))])
 
         for node in all_nodes:
             self.graph[node] = set()
