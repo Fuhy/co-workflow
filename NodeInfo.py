@@ -24,6 +24,7 @@ class NodeInfo(object):
         self.group = set()
         self.version = 0
         self.status = False
+        self.abstract = ""
         self._graph_ID = select('graph_id', 'DAG_Node',
                                 'task_id = {}'.format(task_ID))
 
@@ -48,6 +49,9 @@ class NodeInfo(object):
         group = select('user_id', 'Node_Group', "task_ID = {}".format(task_ID))
         for member in [member for item in group for member in item]:
             self.group.add(member)
+        self.abstract = select('abstract','Node_Details',"task_ID = {}".format(task_ID))
+
+
 
     def save_state(self):
         if HashMaker().check_task_exist(self.task_ID):

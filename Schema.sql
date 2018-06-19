@@ -82,7 +82,7 @@ INSERT INTO `User`(`user_id`,`user_name`,`password`) VALUES
 INSERT INTO `User_Info` VALUES
 (111,'rick','Male','A great engineer.'),
 (222,'taylor','Female','An experienced drawer.'),
-(333,'sponge','Male','Just a sponge.')
+(333,'sponge','Male','Just a piece of sponge.')
 ;
 
 
