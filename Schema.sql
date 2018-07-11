@@ -98,19 +98,6 @@ INSERT INTO `DAG_Group`VALUES
 (001,111)
 ;
 
-INSERT INTO `DAG_Node` VALUES
-(1001,000),
-(2002,000),
-(3003,000)
-;
-
-INSERT INTO `DAG_Edge` VALUES
-(1001,2002),
-(2002,3003),
-(3003,4004),
-(5005,6006)
-;
-
 INSERT INTO `Node` VALUES
 (1001,111,'wash',0,'False'),
 (2002,111,'read',0,'False'),
@@ -120,6 +107,25 @@ INSERT INTO `Node` VALUES
 (5005,111,'swim',0,'False')
 ;
 
+INSERT INTO `DAG_Node` VALUES
+(1001,000),
+(2002,000),
+(3003,000),
+(4004,000),
+(5005,000),
+(6006,000)
+;
+
+INSERT INTO `DAG_Edge` VALUES
+(1001,2002),
+(2002,3003),
+(2002,4004),
+(4004,5005),
+(5005,6006)
+;
+
+
+
 INSERT INTO `Node_Group` VALUES
 (1001,111),
 (1001,222),
@@ -128,13 +134,13 @@ INSERT INTO `Node_Group` VALUES
 
 INSERT INTO `Node_Details` VALUES
 (1001,"Finish it as soon as possible",NULL),
-(2002,"Nothing",NULL),
-(3003,"Eh",NULL)
+(2002,"Nothing :)",NULL),
+(3003,"Eh - -",NULL),
+(4004,"Oh!",NULL),
+(5005,"Ouch!",NULL),
+(6006,"Wow!",NULL)
 ;
 
-INSERT INTO `Constraint` VALUES
-(6006,7007)
-;
 
 
 

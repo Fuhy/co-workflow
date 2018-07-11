@@ -33,8 +33,10 @@ class DAG(object):
         predicate = "begin_TID = task_ID and graph_ID = '{}' ".format(graph_ID)
         result = select('begin_TID, end_TID', 'DAG_Node, DAG_Edge', predicate)
 
-        all_nodes = set([i for item in result for i in item]) | set(
-            [i[0] for i in select('task_id', 'DAG_Node',"graph_ID = {}".format(graph_ID))])
+        all_nodes = set([i for item in result for i in item]) | set([
+            i[0] for i in select('task_id', 'DAG_Node', "graph_ID = {}".format(
+                graph_ID))
+        ])
 
         for node in all_nodes:
             self.graph[node] = set()
@@ -46,9 +48,13 @@ class DAG(object):
                                  "graph_ID = '{}' ".format(graph_ID))[0][0]
         self.owner_ID = select('owner_ID', 'DAG',
                                "graph_ID = '{}' ".format(graph_ID))[0][0]
-        self.group = set([i[0] for i in select('user_ID', 'DAG_Group','graph_ID = {}'.format(graph_ID))])
+        self.group = set([
+            i[0] for i in select('user_ID', 'DAG_Group',
+                                 'graph_ID = {}'.format(graph_ID))
+        ])
 
-        self.abstract = select('abstract','DAG', "graph_ID = '{}' ".format(graph_ID))[0][0]
+        self.abstract = select('abstract', 'DAG',
+                               "graph_ID = '{}' ".format(graph_ID))[0][0]
 
     def save_state(self):
         if HashMaker().check_graph_exist(self.graph_ID):
@@ -59,7 +65,7 @@ class DAG(object):
                 self.graph_ID))
         else:
             values = "({},'{}',{},'{}')".format(self.graph_ID, self.graph_name,
-                                           self.owner_ID,self.abstract)
+                                                self.owner_ID, self.abstract)
             insert('DAG', values)
 
     def size(self):
